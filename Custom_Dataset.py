@@ -21,6 +21,8 @@ AUTHOR: Ian Chavez
 COMMENT: n/a
 ====================== END OF MODIFICATION HISTORY ============================
 """
+import os
+from PIL import Image
 from torch.utils.data import Dataset
 class CustomDataset(Dataset):
     def __init__(self, dataframe, root_dir, transform=None):
@@ -32,7 +34,7 @@ class CustomDataset(Dataset):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1])
+        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1].replace('\\', '/'))
         image = Image.open(img_name).convert("RGB")
         label = int(self.dataframe.iloc[idx, 2])
 

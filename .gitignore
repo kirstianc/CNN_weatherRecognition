@@ -1,1 +1,3 @@
 processed_datasets/
+__pycache__/
+*.pyc
