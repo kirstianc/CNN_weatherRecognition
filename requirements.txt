@@ -2,4 +2,5 @@ opencv-python
 torch
 torchvision
 pandas
+matplotlib
 ```

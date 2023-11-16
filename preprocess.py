@@ -31,10 +31,10 @@ print("Importing libraries...")
 import os
 import pandas as pd
 import torch
+import Custom_Dataset as cd
 from torchvision.transforms import v2
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
 from PIL import Image
 
 print("Setting paths...")
@@ -51,26 +51,6 @@ print("Reading csv file...")
 # Read csv file
 df = pd.read_csv(csv_dir)
 
-# Define custom dataset class
-class CustomDataset(Dataset):
-    def __init__(self, dataframe, root_dir, transform=None):
-        self.dataframe = dataframe
-        self.root_dir = root_dir
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.dataframe)
-
-    def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1])
-        image = Image.open(img_name).convert("RGB")
-        label = int(self.dataframe.iloc[idx, 2])  # Assuming class is in the third column
-
-        if self.transform:
-            image = self.transform(image)
-
-        return image, label
-
 print("Composing transformations...")
 # Transformations to be applied to the dataset
 transform = v2.Compose(
@@ -83,7 +63,7 @@ transform = v2.Compose(
 )
 
 print("Creating dataset...")
-dataset = CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
+dataset = cd.CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
 
 print("Calculating dataset sizes...")
 # Calculate dataset sizes

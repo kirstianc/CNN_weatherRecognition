@@ -31,6 +31,9 @@ print("---- Starting Training CNN ----")
 print("Importing libraries...")
 import torch
 import torch.nn as nn
+import sys
+sys.path.insert(0, '../')
+import Custom_Dataset as cd
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
@@ -44,7 +47,7 @@ class CNNModel(nn.Module):
         return x
 
 print("Loading dataset...")
-dataset = torch.load("./processed_datasets/train_dataset.pth")
+dataset = torch.load("../processed_datasets/train_dataset.pth")
 
 print("Creating instance of CNN model...")
 model = CNNModel()
