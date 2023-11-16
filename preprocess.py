@@ -34,27 +34,22 @@ import torch
 from torchvision.transforms import v2
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 from PIL import Image
 
 print("Setting paths...")
 # Set the paths
 data_dir = "./dataset/"
-csv_dir = ".image_class_map.csv"
+csv_dir = "image_class_map.csv"
 processed_datasets_dir = "./processed_datasets/"
-train_dir = "./processed_datasets/train/"
-val_dir = "./processed_datasets/validation/"
-test_dir = "./processed_datasets/test/"
 
 print("Creating directories...")
 # Create directories for train, validation, and test sets
 os.makedirs(processed_datasets_dir, exist_ok=True)
-os.makedirs(train_dir, exist_ok=True)
-os.makedirs(val_dir, exist_ok=True)
-os.makedirs(test_dir, exist_ok=True)
 
+print("Reading csv file...")
 # Read csv file
 df = pd.read_csv(csv_dir)
-
 
 # Define custom dataset class
 class CustomDataset(Dataset):
@@ -108,8 +103,8 @@ test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
 
 print("Saving datasets...")
 # Save datasets
-torch.save(train_set, train_dir)
-torch.save(val_set, val_dir)
-torch.save(test_set, test_dir)
+torch.save(train_set, os.path.join(processed_datasets_dir, 'train_dataset.pth'))
+torch.save(val_set, os.path.join(processed_datasets_dir, 'val_dataset.pth'))
+torch.save(test_set, os.path.join(processed_datasets_dir, 'test_dataset.pth'))
 
 print("---- Finished Preprocessing ----")
