@@ -19,20 +19,27 @@ All Rights Reserved
 MOD: Creation of file and initial function
 AUTHOR: Ian Chavez
 COMMENT: n/a
+
+11/16/23:
+MOD: Fix transformation and dataset loading
+AUTHOR: Ian Chavez
+COMMENT: n/a
 ====================== END OF MODIFICATION HISTORY ============================
 """
+print("---- Starting Preprocessing ----")
 print("Importing libraries...")
 import os
-import shutil
-import random
+import pandas as pd
 import torch
-from torchvision import transforms
+from torchvision.transforms import v2
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from PIL import Image
 
 print("Setting paths...")
 # Set the paths
 data_dir = "./dataset/"
+csv_dir = ".image_class_map.csv"
 processed_datasets_dir = "./processed_datasets/"
 train_dir = "./processed_datasets/train/"
 val_dir = "./processed_datasets/validation/"
@@ -45,20 +52,43 @@ os.makedirs(train_dir, exist_ok=True)
 os.makedirs(val_dir, exist_ok=True)
 os.makedirs(test_dir, exist_ok=True)
 
+# Read csv file
+df = pd.read_csv(csv_dir)
+
+
+# Define custom dataset class
+class CustomDataset(Dataset):
+    def __init__(self, dataframe, root_dir, transform=None):
+        self.dataframe = dataframe
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.dataframe)
+
+    def __getitem__(self, idx):
+        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1])
+        image = Image.open(img_name).convert("RGB")
+        label = int(self.dataframe.iloc[idx, 2])  # Assuming class is in the third column
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
 print("Composing transformations...")
 # Transformations to be applied to the dataset
-transform = transforms.Compose(
+transform = v2.Compose(
     [
-        transforms.Resize((224, 224)),
-        transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
+        v2.RandomResizedCrop(size=(224, 224), antialias=True),
+        v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
+        v2.RandomHorizontalFlip(p=0.5),
+        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ]
 )
 
-print("Loading dataset w transformations...")
-# Load dataset and apply transformations
-dataset = ImageFolder(root=data_dir, transform=transform)
+print("Creating dataset...")
+dataset = CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
 
 print("Calculating dataset sizes...")
 # Calculate dataset sizes
@@ -68,30 +98,18 @@ val_size = int(0.15 * total_size)
 test_size = total_size - train_size - val_size
 
 print("Splitting dataset...")
-# Split the dataset
-train_set, val_set, test_set = torch.utils.data.random_split(
-    dataset, [train_size, val_size, test_size]
-)
+train_set, val_set, test_set = torch.utils.data.random_split(dataset, [train_size, val_size, test_size])
 
-print("Creating data loaders...")
-# Create data loaders
+print("Creating dataloaders...")
+# Split dataset into train, validation, and test sets
 train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
-val_loader = DataLoader(val_set, batch_size=64, shuffle=False)
-test_loader = DataLoader(test_set, batch_size=64, shuffle=False)
-
+valid_loader = DataLoader(val_set, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
 
 print("Saving datasets...")
-
-
-# Save the split datasets to respective directories
-def save_dataset(loader, directory):
-    for i, (data, labels) in enumerate(loader):
-        for j in range(len(data)):
-            img_path = os.path.join(directory, f"{i * len(data) + j}.jpg")
-            shutil.copy(dataset.imgs[i * len(data) + j][0], img_path)
-
-
 # Save datasets
-save_dataset(train_loader, train_dir)
-save_dataset(val_loader, val_dir)
-save_dataset(test_loader, test_dir)
+torch.save(train_set, train_dir)
+torch.save(val_set, val_dir)
+torch.save(test_set, test_dir)
+
+print("---- Finished Preprocessing ----")
