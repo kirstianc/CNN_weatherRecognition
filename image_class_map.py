@@ -24,23 +24,27 @@ COMMENT: n/a
 import os
 import csv
 
-# Set paths
-data_dir = "./dataset/"
-csv_file_path = "image_class_map.csv"
 
-# If csv file exists, clear it
-if os.path.exists(csv_file_path):
-    open(csv_file_path, "w").close()
+def main():
+    print("---- Starting Image Class Map ----")
+    print("Setting paths...")
 
-# Write to csv file, img name (i.e. 0001.jpg), path, and class (root folder)
-with open("image_class_map.csv", "w", newline="") as file:
-    writer = csv.writer(file)
-    field = ["Image", "Path", "Class"]
-    writer.writerow(field)
+    # Set paths
+    data_dir = "./dataset/"
+    csv_file_path = "image_class_map.csv"
 
-    for root, dirs, files in os.walk(data_dir):
-        for name in files:
-            if name.endswith(".jpg"):
-                path = os.path.join(root, name)
-                class_name = os.path.basename(root)
-                writer.writerow([name, path, class_name])
+    # If csv file exists, clear it
+    if os.path.exists(csv_file_path):
+        open(csv_file_path, "w").close()
+
+    # Write to csv file, img name (i.e. 0001.jpg), path, and class (root folder)
+    with open("image_class_map.csv", "w", newline="") as file:
+        writer = csv.writer(file)
+        field = ["Image", "Path", "Class"]
+        writer.writerow(field)
+        for root, dirs, files in os.walk(data_dir):
+            for file in files:
+                if file.endswith(".jpg") or file.endswith(".png"):
+                    path = os.path.join(root, file)
+                    class_name = os.path.basename(root)
+                    writer.writerow([file, path.replace(data_dir, ""), class_name])

@@ -21,22 +21,36 @@ AUTHOR: Ian Chavez
 COMMENT: n/a
 ====================== END OF MODIFICATION HISTORY ============================
 """
+import torch
+from torch.utils.data import Dataset
 import os
 from PIL import Image
-from torch.utils.data import Dataset
+
+
 class CustomDataset(Dataset):
     def __init__(self, dataframe, root_dir, transform=None):
         self.dataframe = dataframe
         self.root_dir = root_dir
         self.transform = transform
 
+        # Create a mapping of class names to integers
+        self.class_to_num = {
+            class_name: i
+            for i, class_name in enumerate(self.dataframe["Class"].unique())
+        }
+
     def __len__(self):
         return len(self.dataframe)
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1].replace('\\', '/'))
-        image = Image.open(img_name).convert("RGB")
-        label = int(self.dataframe.iloc[idx, 2])
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1])
+        image = Image.open(img_name)
+        label = self.class_to_num[
+            self.dataframe.iloc[idx, 2]
+        ]  # Convert class name to integer
 
         if self.transform:
             image = self.transform(image)

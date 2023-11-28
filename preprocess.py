@@ -26,65 +26,77 @@ AUTHOR: Ian Chavez
 COMMENT: n/a
 ====================== END OF MODIFICATION HISTORY ============================
 """
-print("---- Starting Preprocessing ----")
-print("Importing libraries...")
 import os
 import pandas as pd
 import torch
 import Custom_Dataset as cd
+from torchvision.transforms import ToTensor
 from torchvision.transforms import v2
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from torchvision.transforms import Lambda
+
 from PIL import Image
 
-print("Setting paths...")
-# Set the paths
-data_dir = "./dataset/"
-csv_dir = "image_class_map.csv"
-processed_datasets_dir = "./processed_datasets/"
 
-print("Creating directories...")
-# Create directories for train, validation, and test sets
-os.makedirs(processed_datasets_dir, exist_ok=True)
+def convert_to_rgb(image):
+    return image.convert("RGB")
 
-print("Reading csv file...")
-# Read csv file
-df = pd.read_csv(csv_dir)
 
-print("Composing transformations...")
-# Transformations to be applied to the dataset
-transform = v2.Compose(
-    [
-        v2.RandomResizedCrop(size=(224, 224), antialias=True),
-        v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
-        v2.RandomHorizontalFlip(p=0.5),
-        v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ]
-)
+def main():
+    print("---- Starting Preprocessing ----")
+    print("Setting paths...")
+    # Set the paths
+    data_dir = "./dataset/"
+    csv_dir = "image_class_map.csv"
+    processed_datasets_dir = "./processed_datasets/"
 
-print("Creating dataset...")
-dataset = cd.CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
+    print("Creating directories...")
+    # Create directories for train, validation, and test sets
+    os.makedirs(processed_datasets_dir, exist_ok=True)
 
-print("Calculating dataset sizes...")
-# Calculate dataset sizes
-total_size = len(dataset)
-train_size = int(0.7 * total_size)
-val_size = int(0.15 * total_size)
-test_size = total_size - train_size - val_size
+    print("Reading csv file...")
+    # Read csv file
+    df = pd.read_csv(csv_dir)
 
-print("Splitting dataset...")
-train_set, val_set, test_set = torch.utils.data.random_split(dataset, [train_size, val_size, test_size])
+    print("Composing transformations...")
+    # Transformations to be applied to the dataset
+    transform = v2.Compose(
+        [
+            Lambda(convert_to_rgb),
+            v2.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1),
+            v2.RandomResizedCrop(size=(224, 224), antialias=True),
+            v2.RandomHorizontalFlip(p=0.5),
+            ToTensor(),
+        ]
+    )
 
-print("Creating dataloaders...")
-# Split dataset into train, validation, and test sets
-train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
-valid_loader = DataLoader(val_set, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
+    print("Creating dataset...")
+    dataset = cd.CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
 
-print("Saving datasets...")
-# Save datasets
-torch.save(train_set, os.path.join(processed_datasets_dir, 'train_dataset.pth'))
-torch.save(val_set, os.path.join(processed_datasets_dir, 'val_dataset.pth'))
-torch.save(test_set, os.path.join(processed_datasets_dir, 'test_dataset.pth'))
+    print("Calculating dataset sizes...")
+    # Calculate dataset sizes
+    total_size = len(dataset)
+    train_size = int(0.7 * total_size)
+    val_size = int(0.15 * total_size)
+    test_size = total_size - train_size - val_size
 
-print("---- Finished Preprocessing ----")
+    print("Splitting dataset...")
+    train_set, val_set, test_set = torch.utils.data.random_split(
+        dataset, [train_size, val_size, test_size]
+    )
+
+    print("Creating dataloaders...")
+    # Split dataset into train, validation, and test sets
+    train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
+    valid_loader = DataLoader(val_set, batch_size=64, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
+
+    print("Saving datasets...")
+    # Save datasets
+    torch.save(train_set, os.path.join(processed_datasets_dir, "train_dataset.pth"))
+    torch.save(val_set, os.path.join(processed_datasets_dir, "val_dataset.pth"))
+    torch.save(test_set, os.path.join(processed_datasets_dir, "test_dataset.pth"))
+
+    print("---- Finished Preprocessing ----")
+    return train_loader, valid_loader, test_loader
