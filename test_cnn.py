@@ -1,3 +1,18 @@
+# coding: utf-8
+# NAME: test_cnn.py
+"""
+AUTHOR: Ian Chavez
+
+Unpublished-rights reserved under the copyright laws of the United States.
+
+This data and information is proprietary to, and a valuable trade secret of Ian Chavez. It is given in confidence by
+Ian Chavez. Its use, duplication, or disclosure is subject to the restrictions set forth in the License Agreement under which it has been
+distributed.
+
+Unpublished Copyright © 2023 Ian Chavez
+
+All Rights Reserved
+"""
 import pandas as pd
 import torch
 from torchvision.models import resnet18

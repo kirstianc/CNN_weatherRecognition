@@ -13,14 +13,6 @@ Unpublished Copyright © 2023 Ian Chavez
 
 All Rights Reserved
 """
-"""
-========================== MODIFICATION HISTORY ==============================
-11/16/23:
-MOD: Creation of file and initial function
-AUTHOR: Ian Chavez
-COMMENT: n/a
-====================== END OF MODIFICATION HISTORY ============================
-"""
 import torch
 from torch.utils.data import Dataset
 import os
@@ -48,9 +40,7 @@ class CustomDataset(Dataset):
 
         img_name = os.path.join(self.root_dir, self.dataframe.iloc[idx, 1])
         image = Image.open(img_name)
-        label = self.class_to_num[
-            self.dataframe.iloc[idx, 2]
-        ]  # Convert class name to integer
+        label = self.class_to_num[self.dataframe.iloc[idx, 2]]
 
         if self.transform:
             image = self.transform(image)

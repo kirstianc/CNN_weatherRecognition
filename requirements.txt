@@ -2,5 +2,5 @@ opencv-python
 torch
 torchvision
 pandas
-matplotlib
+tensor
 ```

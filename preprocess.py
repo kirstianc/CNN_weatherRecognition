@@ -13,19 +13,6 @@ Unpublished Copyright © 2023 Ian Chavez
 
 All Rights Reserved
 """
-"""
-========================== MODIFICATION HISTORY ==============================
-11/15/23:
-MOD: Creation of file and initial function
-AUTHOR: Ian Chavez
-COMMENT: n/a
-
-11/16/23:
-MOD: Fix transformation and dataset loading
-AUTHOR: Ian Chavez
-COMMENT: n/a
-====================== END OF MODIFICATION HISTORY ============================
-"""
 import os
 import pandas as pd
 import torch
