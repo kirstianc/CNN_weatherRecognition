@@ -15,7 +15,7 @@ All Rights Reserved
 """
 import pandas as pd
 import torch
-from torchvision.models import resnet18
+from torchvision.models import resnet34
 from torch.nn import Linear
 from sklearn.metrics import precision_score, recall_score, f1_score
 from torch.utils.tensorboard import SummaryWriter
@@ -26,40 +26,7 @@ def test_cnn(test_loader):
     df = pd.read_csv("image_class_map.csv")
 
     # Define the CNN model
-    model = resnet18(pretrained=True)
-    num_ftrs = model.fc.in_features
-    model.fc = Linear(num_ftrs, len(df["Class"].unique()))
-
-    # Load the trained model
-    model.load_state_dict(torch.load("model.pth"))
-
-    # Test the model
-    model.eval()
-    correct = 0
-    total = 0
-    all_labels = []
-    all_predictions = []
-
-    # create a SummaryWriter
-    writer = SummaryWriter()
-
-    with torch.no_grad():
-        import pandas as pd
-
-
-import torch
-from torchvision.models import resnet18
-from torch.nn import Linear
-from sklearn.metrics import precision_score, recall_score, f1_score
-from torch.utils.tensorboard import SummaryWriter
-
-
-def test_cnn(test_loader):
-    # Load image paths and classes
-    df = pd.read_csv("image_class_map.csv")
-
-    # Define the CNN model
-    model = resnet18(pretrained=True)
+    model = resnet34(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
 

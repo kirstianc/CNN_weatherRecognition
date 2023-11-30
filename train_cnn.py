@@ -15,7 +15,7 @@ All Rights Reserved
 """
 import torch
 import pandas as pd
-from torchvision.models import resnet18
+from torchvision.models import resnet34
 from torch.nn import Linear
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
@@ -35,7 +35,7 @@ def main(train_loader, valid_loader):
 
     print("Creating model...")
     # Define the CNN model
-    model = resnet18(pretrained=True)
+    model = resnet34(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
 
@@ -46,7 +46,7 @@ def main(train_loader, valid_loader):
 
     print("Training model...")
     # Training loop
-    for epoch in range(5):  # loop over the dataset multiple times
+    for epoch in range(10):  # loop over the dataset multiple times
         running_loss = 0.0
         all_labels = []
         all_predictions = []

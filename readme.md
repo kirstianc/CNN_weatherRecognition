@@ -24,3 +24,5 @@ The URL for this dataset is: https://www.kaggle.com/datasets/jehanbhathena/weath
 
 The images are sourced from the Harvard Dataverse where it was published by Haixia Xiao of the Nanjing Joint Institute for Atmospheric Sciences. 
 The URL to the Harvard Dataverse dataset is: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/M8JQCR.
+
+#### python -m tensorboard.main --logdir=runs
