@@ -26,28 +26,25 @@ from torchvision.transforms import Lambda
 from PIL import Image
 
 
+# convert grayscale to rgb (resolves error with resnet)
 def convert_to_rgb(image):
     return image.convert("RGB")
 
 
 def main():
     print("---- Starting Preprocessing ----")
-    print("Setting paths...")
-    # Set the paths
+
+    # set paths
     data_dir = "./dataset/"
     csv_dir = "image_class_map.csv"
     processed_datasets_dir = "./processed_datasets/"
 
-    print("Creating directories...")
-    # Create directories for train, validation, and test sets
+    print("Creating processed_datasets directory...")
     os.makedirs(processed_datasets_dir, exist_ok=True)
 
-    print("Reading csv file...")
-    # Read csv file
     df = pd.read_csv(csv_dir)
 
     print("Composing transformations...")
-    # Transformations to be applied to the dataset
     transform = v2.Compose(
         [
             Lambda(convert_to_rgb),
@@ -58,29 +55,25 @@ def main():
         ]
     )
 
-    print("Creating dataset...")
     dataset = cd.CustomDataset(dataframe=df, root_dir=data_dir, transform=transform)
 
-    print("Calculating dataset sizes...")
-    # Calculate dataset sizes
+    # calculate dataset sizes
     total_size = len(dataset)
     train_size = int(0.7 * total_size)
     val_size = int(0.15 * total_size)
     test_size = total_size - train_size - val_size
 
-    print("Splitting dataset...")
+    print("Splitting datasets...")
     train_set, val_set, test_set = torch.utils.data.random_split(
         dataset, [train_size, val_size, test_size]
     )
 
-    print("Creating dataloaders...")
-    # Split dataset into train, validation, and test sets
+    # create dataloaders
     train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
     valid_loader = DataLoader(val_set, batch_size=64, shuffle=True)
     test_loader = DataLoader(test_set, batch_size=64, shuffle=True)
 
     print("Saving datasets...")
-    # Save datasets
     torch.save(train_set, os.path.join(processed_datasets_dir, "train_dataset.pth"))
     torch.save(val_set, os.path.join(processed_datasets_dir, "val_dataset.pth"))
     torch.save(test_set, os.path.join(processed_datasets_dir, "test_dataset.pth"))

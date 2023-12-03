@@ -25,24 +25,20 @@ def main():
     print("---- Starting Main ----")
 
     print("Cleaning up...")
-    # Delete the processed_dataset folder if it exists
+    # delete processed_dataset folder if it exists --> clean start every time
     if os.path.exists("processed_dataset"):
         shutil.rmtree("processed_dataset")
 
     print("Creating image_class_map.csv...")
-    # Create csv file with image names, paths, and classes
     image_class_map.main()
 
     print("Preprocessing...")
-    # Get data loaders and create processed_datasets
     train_loader, valid_loader, test_loader = preprocess.main()
 
     print("Training...")
-    # Train model
     train_cnn.main(train_loader, valid_loader)
 
     print("Testing...")
-    # Test model
     test_cnn.test_cnn(test_loader)
 
 

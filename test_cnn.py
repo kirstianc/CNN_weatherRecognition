@@ -22,28 +22,26 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 def test_cnn(test_loader):
-    # Load image paths and classes
+    print("---- Starting Testing ----")
     df = pd.read_csv("image_class_map.csv")
+    writer = SummaryWriter()
 
-    # Define the CNN model
+    # setup
     model = resnet34(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
 
-    # Load the trained model
     model.load_state_dict(torch.load("model.pth"))
 
-    # Test the model
+    # initialize
     model.eval()
     correct = 0
     total = 0
     all_labels = []
     all_predictions = []
 
-    # create a SummaryWriter
-    writer = SummaryWriter()
-
     with torch.no_grad():
+        # iterate over test data
         for i, data in enumerate(test_loader):
             images, labels = data
             if images.shape[1] == 1:
@@ -77,3 +75,5 @@ def test_cnn(test_loader):
 
     # close the writer after testing
     writer.close()
+
+    print("Finished Training")

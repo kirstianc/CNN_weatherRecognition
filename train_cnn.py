@@ -26,64 +26,84 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 def main(train_loader, valid_loader):
     print("---- Starting Training ----")
 
-    # create a SummaryWriter
     writer = SummaryWriter()
-
-    print("Loading image class map...")
-    # Load image paths and classes
     df = pd.read_csv("image_class_map.csv")
 
-    print("Creating model...")
-    # Define the CNN model
+    # setup
     model = resnet34(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
-
-    print("Defining loss function and optimizer...")
-    # Define loss function and optimizer
     criterion = CrossEntropyLoss()
     optimizer = SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     print("Training model...")
-    # Training loop
-    for epoch in range(10):  # loop over the dataset multiple times
+    for epoch in range(10):
+        # initialize
         running_loss = 0.0
-        all_labels = []
-        all_predictions = []
+        train_labels = []
+        train_predictions = []
+        valid_labels = []
+        valid_predictions = []
 
+        # train model
+        model.train()
         for i, data in enumerate(train_loader, 0):
-            # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-
-            # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
             outputs = model(inputs)
             _, predicted = torch.max(outputs, 1)
-            all_labels.extend(labels.tolist())
-            all_predictions.extend(predicted.tolist())
+            train_labels.extend(labels.tolist())
+            train_predictions.extend(predicted.tolist())
 
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 
-            # print statistics
             running_loss += loss.item()
 
         accuracy = (
-            torch.tensor(all_labels) == torch.tensor(all_predictions)
-        ).sum().item() / len(all_labels)
-        precision = precision_score(all_labels, all_predictions, average="macro")
-        recall = recall_score(all_labels, all_predictions, average="macro")
-        f1 = f1_score(all_labels, all_predictions, average="macro")
+            torch.tensor(train_labels) == torch.tensor(train_predictions)
+        ).sum().item() / len(train_labels)
+        precision = precision_score(train_labels, train_predictions, average="macro")
+        recall = recall_score(train_labels, train_predictions, average="macro")
+        f1 = f1_score(train_labels, train_predictions, average="macro")
 
         # log metrics to TensorBoard
         writer.add_scalar("Accuracy/train", accuracy, epoch)
         writer.add_scalar("Precision/train", precision, epoch)
         writer.add_scalar("Recall/train", recall, epoch)
         writer.add_scalar("F1/train", f1, epoch)
-        # Save the model
+
+        # validation
+        model.eval()
+        with torch.no_grad():
+            for i, data in enumerate(valid_loader, 0):
+                inputs, labels = data
+
+                # forward pass
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                valid_labels.extend(labels.tolist())
+                valid_predictions.extend(predicted.tolist())
+
+            accuracy = (
+                torch.tensor(valid_labels) == torch.tensor(valid_predictions)
+            ).sum().item() / len(valid_labels)
+            precision = precision_score(
+                valid_labels, valid_predictions, average="macro"
+            )
+            recall = recall_score(valid_labels, valid_predictions, average="macro")
+            f1 = f1_score(valid_labels, valid_predictions, average="macro")
+
+            # log metrics to TensorBoard
+            writer.add_scalar("Accuracy/valid", accuracy, epoch)
+            writer.add_scalar("Precision/valid", precision, epoch)
+            writer.add_scalar("Recall/valid", recall, epoch)
+            writer.add_scalar("F1/valid", f1, epoch)
+
+        # save model
         torch.save(model.state_dict(), "model.pth")
 
     print("Finished Training")
