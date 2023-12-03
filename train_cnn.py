@@ -15,7 +15,7 @@ All Rights Reserved
 """
 import torch
 import pandas as pd
-from torchvision.models import resnet34
+from torchvision.models import resnet18
 from torch.nn import Linear
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
@@ -30,7 +30,7 @@ def main(train_loader, valid_loader):
     df = pd.read_csv("image_class_map.csv")
 
     # setup
-    model = resnet34(pretrained=True)
+    model = resnet18(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
     criterion = CrossEntropyLoss()

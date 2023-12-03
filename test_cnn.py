@@ -15,7 +15,7 @@ All Rights Reserved
 """
 import pandas as pd
 import torch
-from torchvision.models import resnet34
+from torchvision.models import resnet18
 from torch.nn import Linear
 from sklearn.metrics import precision_score, recall_score, f1_score
 from torch.utils.tensorboard import SummaryWriter
@@ -27,7 +27,7 @@ def test_cnn(test_loader):
     writer = SummaryWriter()
 
     # setup
-    model = resnet34(pretrained=True)
+    model = resnet18(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = Linear(num_ftrs, len(df["Class"].unique()))
 
